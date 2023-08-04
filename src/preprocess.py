@@ -23,10 +23,10 @@ def extract_floor(floor_info: str) -> int:
     Args:
         floor_info (str): 층수 정보
     """
-    floor_info = floor_info.str[0:-9]
-    floor_info.strip()
+    split_floor_info = floor_info.split()
+    floor_str = split_floor_info[0]
 
-    return floor_info
+    return int(floor_str) if floor_str.isnumeric() else 0
 
 
 def floor_extractor(df: pd.DataFrame, col: str) -> pd.DataFrame:
@@ -45,17 +45,13 @@ def floor_extractor(df: pd.DataFrame, col: str) -> pd.DataFrame:
     return df
 
 
-# TODO: 전처리 파이프라인 작성
-# 1. 방의 크기는 제곱근을 적용함 (FunctionTransformer 사용)
+# 전처리 파이프라인은 다음 순서를 거칩니다.
+# 1. 방의 크기는 제곱근을 적용함
 # 2. 층수는 실제 층수를 추출하되 숫자가 아닌 Basement 등은 0층으로 표기함
-# 3. 범주형 변수(CAT_FEATURES)는 타겟 인코딩 적용 (from category_encoders import TargetEncoder)
+# 3. 범주형 변수는 타겟 인코딩 적용
 preprocess_pipeline = ColumnTransformer(
     transformers=[
-        (
-            "sqrt_transformation",
-            FunctionTransformer(np.sqrt),
-            ["size"],
-        ),
+        ("sqrt_transformation", FunctionTransformer(np.sqrt), ["size"]),
         (
             "floor_extractor",
             FunctionTransformer(floor_extractor, kw_args={"col": "floor"}),
